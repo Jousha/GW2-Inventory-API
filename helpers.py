@@ -1,4 +1,5 @@
 import json
+import math
 import requests
 
 def get_bank_inventory(api_token):
@@ -75,6 +76,50 @@ def get_item_sell_price(item_id):
     item_api = f'https://api.guildwars2.com/v2/commerce/listings?ids={item_id}'
     price_list = _parse_data(item_api)
     return price_list[0]['sells'][0]['unit_price']
+
+def get_item_profitability(buy, sell):
+    '''
+    Input:
+        buy - The buy price (in copper) of an item
+        sell - The sell price (in copper) of an item
+
+    Returns an integer object of the expected profit from flipping the item
+    after transaction fees (5% on listing and 10% on sale) have been taken
+    '''
+    cost = 0
+    revenue = 0
+    
+    if (buy * 0.05) < 1:
+        cost = buy + 1
+    else:
+        cost = math.ceil(buy * 1.05)
+
+    if (sell * 0.10) < 1:
+        revenue = sell - 1
+    else:
+        revenue = math.floor(sell * 0.90)
+        
+    return revenue - cost
+
+def convert_to_gold(amount):
+    '''
+    Input:
+        amount - An amount of money (in coppers)
+
+    Returns a string representation of the given amount in gold, silver, copper format
+    '''
+    if amount < 100:
+        return f'{amount}c'
+    elif amount < 1000:
+        silver = math.floor(amount / 100)
+        copper = amount % 100
+        return f'{silver}s {copper}c'
+    else:
+        gold = math.floor(amount / 1000)
+        silver = math.floor((amount % 1000) / 100) 
+        copper = (amount % 1000) % 100
+        return f'{gold}g {silver}s {copper}c'
+    
 
 def _parse_data(api_string):
     '''
