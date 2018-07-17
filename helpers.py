@@ -77,17 +77,19 @@ def get_item_sell_price(item_id):
     price_list = _parse_data(item_api)
     return price_list[0]['sells'][0]['unit_price']
 
-def get_item_profitability(buy, sell):
+def get_item_profitability(item_id):
     '''
     Input:
-        buy - The buy price (in copper) of an item
-        sell - The sell price (in copper) of an item
+        item_id - String of an id reference number of an item in the game
 
     Returns an integer object of the expected profit from flipping the item
     after transaction fees (5% on listing and 10% on sale) have been taken
     '''
     cost = 0
     revenue = 0
+
+    buy = get_item_buy_price(item_id)
+    sell = get_item_sell_price(item_id)
     
     if (buy * 0.05) < 1:
         cost = buy + 1
@@ -108,17 +110,31 @@ def convert_to_gold(amount):
 
     Returns a string representation of the given amount in gold, silver, copper format
     '''
+    negative = False
+    if amount < 0:
+        negative = True
+        amount = abs(amount)
+    
     if amount < 100:
-        return f'{amount}c'
+        if negative:
+            return f'{amount}c loss'
+        else:
+            return f'{amount}c profit'
     elif amount < 1000:
         silver = math.floor(amount / 100)
         copper = amount % 100
-        return f'{silver}s {copper}c'
+        if negative:
+            return f'{silver}s {copper}c loss'
+        else:
+            return f'{silver}s {copper}c profit'
     else:
         gold = math.floor(amount / 1000)
         silver = math.floor((amount % 1000) / 100) 
         copper = (amount % 1000) % 100
-        return f'{gold}g {silver}s {copper}c'
+        if negative:
+            return f'{gold}g {silver}s {copper}c loss'
+        else:
+            return f'{gold}g {silver}s {copper}c profit'
     
 
 def _parse_data(api_string):
@@ -131,3 +147,4 @@ def _parse_data(api_string):
     r = requests.get(api_string)
     parsed_r = json.loads(r.text)
     return parsed_r
+
