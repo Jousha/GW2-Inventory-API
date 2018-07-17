@@ -1,5 +1,6 @@
 # GW2-Inventory-API
-Collate inventory information from GW2 through use of API
+Collate pricing and potential profit information from GW2 through use of the official API
+
 
 Calculate profitability of items in:
 * Character inventory
