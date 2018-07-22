@@ -18,13 +18,20 @@ def get_character_inventory(api_token, character_name):
         api_token - String of the api key of a valid account with inventory viewing rights
         character_name - The name of the character which will be queried
 
-    Returns a list object containing the character inventory associated with the api key
+    Returns a list object containing id numbers of items in the character inventory associated with the api key
     '''
     if (' ' in character_name):
         character_name = '%20'.join(character_name.split(' '))
         
     character_api = f'https://api.guildwars2.com/v2/characters/{character_name}/inventory?access_token={api_token}'
-    return _parse_data(character_api)
+    item_ids = []
+    bags = _parse_data(character_api)['bags']
+    for bag in bags:
+        inventory = bag['inventory']
+        for item in inventory:
+            if not item is None:
+                item_ids.append(item['id'])
+    return item_ids
 
 def get_all_character_inventories(api_token):
     '''
@@ -64,7 +71,17 @@ def get_item_buy_price(item_id):
     item_api = f'https://api.guildwars2.com/v2/commerce/listings?ids={item_id}'
     price_list = _parse_data(item_api)
     return price_list[0]['buys'][0]['unit_price']
-    
+
+def get_item_buy_strength(item_id):
+    '''
+    Input:
+        item_id - String of an id reference number of an item in the game
+
+    Returns a string object for the quantity of total buy orders
+    '''
+    item_api = f'https://api.guildwars2.com/v2/commerce/listings?ids={item_id}'
+    price_list = _parse_data(item_api)
+    return price_list[0]['buys'][0]['quantity']    
 
 def get_item_sell_price(item_id):
     '''
@@ -76,6 +93,17 @@ def get_item_sell_price(item_id):
     item_api = f'https://api.guildwars2.com/v2/commerce/listings?ids={item_id}'
     price_list = _parse_data(item_api)
     return price_list[0]['sells'][0]['unit_price']
+
+def get_item_sell_strength(item_id):
+    '''
+    Input:
+        item_id - String of an id reference number of an item in the game
+
+    Returns a string object for the quantity of total sell orders
+    '''
+    item_api = f'https://api.guildwars2.com/v2/commerce/listings?ids={item_id}'
+    price_list = _parse_data(item_api)
+    return price_list[0]['sells'][0]['quantity']
 
 def get_item_profitability(item_id):
     '''
@@ -147,4 +175,3 @@ def _parse_data(api_string):
     r = requests.get(api_string)
     parsed_r = json.loads(r.text)
     return parsed_r
-
